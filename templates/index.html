@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>vocalPDF</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+
+        /* Prevent horizontal scrolling */
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Numbers Section Styling */
+        .numbers-section {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            text-align: center;
+            position: absolute;
+            width: 100%;
+            /* Position relative to drop area's bottom border */
+            top: calc(50vh + -30px); /* Adjusted for better placement */
+            padding: 0 20px;
+        }
+
+        .number-box {
+            font-size: clamp(18px, 2vw, 24px);
+            font-weight: bold;
+            color: #007bff;
+            border: 2px solid #007bff;
+            padding: clamp(10px, 2vw, 15px);
+            border-radius: 10px;
+            background-color: #f4f4f4;
+            width: clamp(120px, 15vw, 150px);
+        }
+
+        .number-label {
+            font-size: clamp(14px, 1.5vw, 16px);
+            margin-top: 10px;
+            color: #555;
+        }
+
+        /* Rating Section (Stars Section) Styling */
+        .rating-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            text-align: center;
+            position: absolute;
+            width: 100%;
+            top: calc(50vh + 90px); /* Positioning right below numbers section */
+        }
+
+        .rating-stars {
+            font-size: 28px;
+            color: #ffc107;
+        }
+
+        .rating-score {
+            margin-top: 10px;
+            font-size: 18px;
+            color: #555;
+            margin-left: 10px;
+        }
+
+        .discover-heading {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            text-align: center;
+            position: absolute;
+            width: 100%;
+            top: calc(50vh + 80px);
+        }
+
+        /* Media Queries for Different Screen Sizes */
+        @media screen and (max-width: 768px) {
+            .numbers-section {
+                flex-direction: column;
+                gap: 20px;
+                top: calc(50vh + 120px); /* Adjusted for mobile */
+                align-items: center;
+            }
+
+            .number-box {
+                width: clamp(150px, 50vw, 200px);
+            }
+
+            .rating-section {
+                top: calc(50vh + 300px); /* Adjusted for mobile */
+            }
+        }
+
+        @media screen and (max-height: 600px) {
+            .numbers-section {
+                top: calc(50vh + 80px); /* Adjusted for shorter screens */
+            }
+
+            .rating-section {
+                top: calc(50vh + 180px); /* Adjusted for shorter screens */
+            }
+        }
+        
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="site-name">VocalPDF</div>
+    </header>
+
+    <div class="wrapper">
+        <h1 style="text-align: center; color: #333; margin-top: 100px; font-size: xxx-large;">Listen to your PDF👂</h1>
+        <div style="display: flex; justify-content: center; margin-top: 40px; height: calc(100vh - 80px);">
+            <form id="upload-form" enctype="multipart/form-data">
+                <div id="drop-area">
+                    <img src="/resources/icon.png" alt="Upload Icon" id="upload-icon">
+                    <p><strong>Drop Document here to Upload</strong></p>
+                    <input type="file" id="pdf-file" accept=".pdf" hidden>
+                    <button type="submit">Upload</button>
+                    <p style="margin-top: 10px; font-size: 14px; color: #555555be;">Upload up to 100 MB</p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Numbers Section -->
+        <div class="numbers-section">
+            <div class="number-box">
+                <div id="users-count">0</div>
+                <div class="number-label">No. of Users</div>
+            </div>
+            <div class="number-box">
+                <div id="uploads-count">0</div>
+                <div class="number-label">No. of Uploads</div>
+            </div>
+            <div class="number-box">
+                <div id="time-spent-count">0</div>
+                <div class="number-label">Time Spent (Minutes)</div>
+            </div>
+        </div>
+
+        <!-- Rating Section (Stars Section) -->
+        <div class="rating-section">
+            <div class="rating-stars">⭐⭐⭐⭐⭐</div>
+            <div class="rating-score">4.6/5.0</div>
+        </div>
+
+        <!-- New Heading -->
+        <div class="discover-heading">
+            <h1 style="text-align: center; color: #333; margin-top: 130px; font-size: xxx-large;">
+                Discover the simplicity of processing PDFs <br> <span style="color: #333; font-weight: bold;">online</span>
+            </h1>
+        </div>
+
+        <!-- PDF Preview Section -->
+        <div id="pdf-preview" class="hidden">
+            <div id="pdf-content"></div>
+        </div>
+
+        <!-- Play/Pause Controls -->
+        <div id="play-pause-controls" class="hidden">
+            <button id="start-btn">Play</button>
+            <button id="pause-btn" class="hidden">Pause</button>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading-spinner" class="hidden">
+            <div class="spinner"></div>
+            <p>Loading your PDF...</p>
+        </div>
+
+    </div>
+
+    <footer>
+        <hr class="full-screen-line">
+        <p class="center-text"><strong>Design and Developed by Vardhman Jain</strong></p>
+    </footer>
+
+    <script src="/static/script.js"></script>
+    <script>
+        // Counter Animation Function
+        function animateCounter(id, targetValue, duration) {
+            const element = document.getElementById(id);
+            let startValue = 0;
+            const increment = targetValue / (duration / 16);
+            const interval = setInterval(() => {
+                startValue += increment;
+                if (startValue >= targetValue) {
+                    startValue = targetValue;
+                    clearInterval(interval);
+                }
+                element.textContent = Math.floor(startValue);
+            }, 16);
+        }
+
+        // Trigger Counter Animation on Page Load
+        window.addEventListener("load", () => {
+            animateCounter("users-count", 256, 2000);
+            animateCounter("uploads-count", 515, 2000);
+            animateCounter("time-spent-count", 450, 2000);
+        });
+    </script>
+</body>
+</html>
