@@ -1,4 +1,5 @@
 flask
 pyttsx3
+google-cloud-texttospeech
 PyPDF2
 gunicorn
